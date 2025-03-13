@@ -27,7 +27,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.example.app</string>
+				<string>com.onepeloton.userplatform.3p.example</string>
 			</array>
 		</dict>
 	</array>

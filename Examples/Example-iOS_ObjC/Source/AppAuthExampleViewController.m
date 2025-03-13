@@ -28,20 +28,27 @@ typedef void (^PostRegistrationCallback)(OIDServiceConfiguration *configuration,
 
 /*! @brief The OIDC issuer from which the configuration will be discovered.
  */
-static NSString *const kIssuer = @"https://issuer.example.com";
+static NSString *const kIssuer = @"https://auth-stage.onepeloton.com";
 
 /*! @brief The OAuth client ID.
     @discussion For client configuration instructions, see the README.
         Set to nil to use dynamic registration with this example.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kClientID = @"YOUR_CLIENT_ID";
+static NSString *const kClientID = @"J114Nt8gYfrMSIuoGgXKeLaGUQbXmpuq";
 
 /*! @brief The OAuth redirect URI for the client @c kClientID.
     @discussion For client configuration instructions, see the README.
     @see https://github.com/openid/AppAuth-iOS/blob/master/Examples/Example-iOS_ObjC/README.md
  */
-static NSString *const kRedirectURI = @"com.example.app:/oauth2redirect/example-provider";
+static NSString *const kRedirectURI = @"com.onepeloton.userplatform.3p.example://auth-stage.onepeloton.com/ios/com.onepeloton.userplatform.3p.example/callback";
+
+static NSString *const kScopeOffline = @"offline_access";
+
+static NSString *const kScope3pExampleRead = @"3p.example:read";
+
+static NSString *const kAudienceKey = @"audience";
+static NSString *const kAudience3pValue = @"https://api-3p-stage.onepeloton.com/";
 
 /*! @brief NSCoding key for the authState property.
  */
@@ -201,16 +208,19 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 - (void)doAuthWithAutoCodeExchange:(OIDServiceConfiguration *)configuration
                           clientID:(NSString *)clientID
                       clientSecret:(NSString *)clientSecret {
+  NSMutableDictionary *additionalParameters = [NSMutableDictionary new];
+  additionalParameters[kAudienceKey] = kAudience3pValue;
+    
   NSURL *redirectURI = [NSURL URLWithString:kRedirectURI];
   // builds authentication request
   OIDAuthorizationRequest *request =
       [[OIDAuthorizationRequest alloc] initWithConfiguration:configuration
                                                     clientId:clientID
                                                 clientSecret:clientSecret
-                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile ]
+                                                      scopes:@[ OIDScopeOpenID, OIDScopeProfile, OIDScopeEmail, kScopeOffline, kScope3pExampleRead ]
                                                  redirectURL:redirectURI
                                                 responseType:OIDResponseTypeCode
-                                        additionalParameters:nil];
+                                        additionalParameters:additionalParameters];
   // performs authentication request
   AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
   [self logMessage:@"Initiating authorization request with scope: %@", request.scope];
