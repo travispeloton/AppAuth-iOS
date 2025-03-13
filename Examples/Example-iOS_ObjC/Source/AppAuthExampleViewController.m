@@ -142,6 +142,7 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 - (void)updateUI {
   _userinfoButton.enabled = [_authState isAuthorized];
   _clearAuthStateButton.enabled = _authState != nil;
+  _endSessionButton.enabled = _authState != nil;
   _codeExchangeButton.enabled = _authState.lastAuthorizationResponse.authorizationCode
                                 && !_authState.lastTokenResponse;
   // dynamically changes authorize button text depending on authorized state
@@ -361,6 +362,38 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
     [_authState updateWithTokenResponse:tokenResponse error:error];
   }];
 }
+
+- (IBAction)endSession:(nullable id)sender {
+
+  NSURL *redirectURI = [NSURL URLWithString:kRedirectURI];
+    
+  OIDServiceConfiguration *configuration =  _authState.lastAuthorizationResponse.request.configuration;
+    
+  NSString *currentIdToken = _authState.lastTokenResponse.idToken;
+    
+  OIDExternalUserAgentIOS *agent = [[OIDExternalUserAgentIOS alloc] initWithPresentingViewController:self];
+    
+  // builds end-session request
+  OIDEndSessionRequest *request =
+      [[OIDEndSessionRequest alloc] initWithConfiguration: configuration
+                                    idTokenHint: currentIdToken
+                                    postLogoutRedirectURL: redirectURI
+                                    additionalParameters: nil];
+    
+  AppDelegate *appDelegate = (AppDelegate *) [UIApplication sharedApplication].delegate;
+  appDelegate.currentAuthorizationFlow = [OIDAuthorizationService
+                        presentEndSessionRequest:request
+                        externalUserAgent:agent
+                        callback:^(OIDEndSessionResponse * _Nullable endSessionResponse, NSError * _Nullable error) {
+      if (error) {
+        [self logMessage:@"End Session error: %@", [error localizedDescription]];
+      } else {
+        [self logMessage:@"End Session success"];
+      }
+      [self setAuthState:nil];
+  }];
+}
+
 
 - (IBAction)clearAuthState:(nullable id)sender {
   [self setAuthState:nil];
