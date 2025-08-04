@@ -404,6 +404,8 @@ static NSString *const kAppAuthExampleAuthStateKey = @"authState";
 }
 
 - (IBAction)userinfo:(nullable id)sender {
+  [_authState setNeedsTokenRefresh]; // DEBUG REFRESH TOKENS
+
   NSURL *userinfoEndpoint =
       _authState.lastAuthorizationResponse.request.configuration.discoveryDocument.userinfoEndpoint;
   if (!userinfoEndpoint) {
